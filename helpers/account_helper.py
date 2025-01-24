@@ -1,7 +1,30 @@
+import time
 from json import loads
 
 from services.api_mailhog import MailHogApi
 from services.dm_api_account import DMApiAccount
+
+
+def retry(
+        function
+):
+    def wrapper(
+            *args,
+            **kwargs
+    ):
+        token = None
+        count = 0
+        while token is None:
+            print(f"Attempt to retrieve token #{count}")
+            token = function(*args, **kwargs)
+            count += 1
+            if count == 5:
+                raise AssertionError("Exceeded retry attempts")
+            if token:
+                return token
+            time.sleep(1)
+
+    return wrapper
 
 
 class AccountHelper:
@@ -19,13 +42,6 @@ class AccountHelper:
             password: str,
             email: str
     ):
-        """
-        Helper function to cover common scenario: Register user
-        :param login:
-        :param password:
-        :param email:
-        :return:
-        """
         json_data = {
             "login": login,
             "email": email,
@@ -42,14 +58,11 @@ class AccountHelper:
             new_user: bool
     ):
         # Retrieve users emails
-        response = self.mailhog.mailhog_api.get_v2_messages(limit=50)
-        assert response.status_code == 200, f"Mails are not received: {response.json()}"
+        # response = self.mailhog.mailhog_api.get_v2_messages(limit=50)
+        # assert response.status_code == 200, f"Mails are not received: {response.json()}"
 
         # Retrieve activation token
-        # token = self.dm_account_api.account_api.get_activation_token(
-        token = self.get_activation_token(
-            login=login, email=email, response=response, new_user=new_user
-        )
+        token = self.get_activation_token(login=login, email=email, new_user=new_user)
         assert token is not None, f"Activation token for user {login} is not generated"
 
         # Activate token
@@ -103,33 +116,32 @@ class AccountHelper:
         response = self.dm_account_api.account_api.put_v1_account_email(json_data=json_data)
         assert response.status_code == 200, f"Email for user {login} is not updated: {response.json()}"
 
-    @staticmethod
     def get_activation_token(
+            self,
             login: str,
-            response,
             new_user: bool,
             email: str = None
     ):
         if new_user:
             # get activation token from the welcome letter
-            token = AccountHelper.get_activation_token_by_login(login=login, response=response)
+            token = self.get_activation_token_by_login(login=login)
         else:
             # get activation token from the confirmation of the email change letter
-            token = AccountHelper.get_activation_token_by_email_and_login(login=login, email=email, response=response)
+            token = self.get_activation_token_by_email_and_login(login=login, email=email)
         return token
 
-    @staticmethod
+    @retry
     def get_activation_token_by_login(
-            login: str,
-            response
+            self,
+            login: str
     ):
         """
         Helper function to get activation token from the welcome letter
         :param login:
-        :param response:
         :return:
         """
         token = None
+        response = self.mailhog.mailhog_api.get_v2_messages(limit=50)
         for item in response.json()["items"]:
             user_data = loads(item["Content"]["Body"])
             user_login = user_data["Login"]
@@ -137,20 +149,20 @@ class AccountHelper:
                 token = user_data["ConfirmationLinkUrl"].split('/')[-1]
             return token
 
-    @staticmethod
+    @retry
     def get_activation_token_by_email_and_login(
+            self,
             login: str,
-            email: str,
-            response
+            email: str
     ):
         """
         Helper function to get activation token from the confirmation of the email change letter
         :param login:
         :param email:
-        :param response:
         :return:
         """
         token = None
+        response = self.mailhog.mailhog_api.get_v2_messages(limit=50)
         for item in response.json()["items"]:
             if email in item["Content"]["Headers"]["To"]:
                 user_data = loads(item["Content"]["Body"])
