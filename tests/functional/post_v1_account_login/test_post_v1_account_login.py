@@ -2,21 +2,18 @@ from json import loads
 
 import datetime
 
-from dm_api_account.apis.account_api import AccountApi
-from dm_api_account.apis.login_api import LoginApi
-from api_mailhog.apis.mailhog_api import MailhogApi
-
 from restclient.configuration import Configuration as DmApiConfiguration
 from restclient.configuration import Configuration as MailhogApiConfiguration
+from services.api_mailhog import MailHogApi
+from services.dm_api_account import DMApiAccount
 
 
 def test_post_v1_account_login():
-    # API Client and Proxy Classes
+    # Facade class for API Client and Proxy Classes
     dm_api_configuration = DmApiConfiguration(host="http://5.63.153.31:5051", disable_log=False)
-    account_api = AccountApi(configuration=dm_api_configuration)
-    login_api = LoginApi(configuration=dm_api_configuration)
+    account = DMApiAccount(configuration=dm_api_configuration)
     mailhog_api_configuration = MailhogApiConfiguration(host="http://5.63.153.31:5025")
-    mailhog_api = MailhogApi(mailhog_api_configuration)
+    mailhog = MailHogApi(configuration=mailhog_api_configuration)
 
     # User data, dt_now some unique value for test purposes
     dt_now = datetime.datetime.now().microsecond
@@ -31,11 +28,11 @@ def test_post_v1_account_login():
     }
 
     # Register user
-    response = account_api.post_v1_account(json_data=json_data)
+    response = account.account_api.post_v1_account(json_data=json_data)
     assert response.status_code == 201, f"User is not created: {response.json()}"
 
     # Retrieve users emails
-    response = mailhog_api.get_v2_messages(limit=50)
+    response = mailhog.mailhog_api.get_v2_messages(limit=50)
     assert response.status_code == 200, f"Mails are not received: {response.json()}"
 
     # Retrieve activation token
@@ -43,11 +40,11 @@ def test_post_v1_account_login():
     assert token is not None, f"Activation token for user {login} is not generated"
 
     # Activate token
-    response = account_api.put_v1_account_token(token=token)
+    response = account.account_api.put_v1_account_token(token=token)
     assert response.status_code == 200, f"Token is not activated: {response.json()}"
 
     # User login
-    response = login_api.post_v1_account_login(json_data=json_data)
+    response = account.login_api.post_v1_account_login(json_data=json_data)
     assert response.status_code == 200, f"User is not logged in: {response.json()}"
 
 

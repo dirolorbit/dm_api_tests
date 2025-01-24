@@ -7,6 +7,16 @@ import uuid
 
 from restclient.configuration import Configuration
 
+structlog.configure(
+    processors=[
+        structlog.processors.JSONRenderer(
+            indent=4,
+            ensure_ascii=True,
+            sort_keys=True
+        )
+    ]
+)
+
 
 class RestClient:
     def __init__(
@@ -53,9 +63,7 @@ class RestClient:
             path,
             **kwargs
     ):
-        #log = self.log.bind(event_id=str(uuid.uuid4()))
-        print(self.host)
-        print(path)
+
         full_url = self.host + path
 
         if self.disable_log:
