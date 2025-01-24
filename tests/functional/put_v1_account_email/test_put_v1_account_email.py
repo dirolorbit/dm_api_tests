@@ -1,7 +1,6 @@
-from json import loads
-
 import datetime
 
+from helpers.account_helper import AccountHelper
 from restclient.configuration import Configuration as DmApiConfiguration
 from restclient.configuration import Configuration as MailhogApiConfiguration
 from services.api_mailhog import MailHogApi
@@ -15,108 +14,32 @@ def test_put_v1_account_email():
     mailhog_api_configuration = MailhogApiConfiguration(host="http://5.63.153.31:5025")
     mailhog = MailHogApi(configuration=mailhog_api_configuration)
 
+    account_helper = AccountHelper(dm_account_api=account, mailhog=mailhog)
+
     # User data, dt_now some unique value for test purposes
     dt_now = datetime.datetime.now().microsecond
     login = f"guest_{dt_now}"
     password = f"password_{dt_now}"
     email = f"{login}@gmail.com"
 
-    json_data = {
-        "login": login,
-        "email": email,
-        "password": password
-    }
-
     # Register user
-    response = account.account_api.post_v1_account(json_data=json_data)
-    assert response.status_code == 201, f"User is not created: {response.json()}"
+    account_helper.register_new_user(login=login, password=password, email=email)
 
-    # Retrieve users emails
-    response = mailhog.mailhog_api.get_v2_messages(limit=50)
-    assert response.status_code == 200, f"Mails are not received: {response.json()}"
+    # Activate user
+    account_helper.activate_user(login=login, email=email, new_user=True)
 
-    # Retrieve activation token
-    token = get_activation_token_by_login(login=login, response=response)
-    assert token is not None, f"Activation token for user {login} is not generated"
-
-    # Activate token
-    response = account.account_api.put_v1_account_token(token=token)
-    assert response.status_code == 200, f"Token is not activated: {response.json()}"
-
-    # User login
-    response = account.login_api.post_v1_account_login(json_data=json_data)
-    assert response.status_code == 200, f"User is not logged in: {response.json()}"
+    # Successful User login
+    account_helper.user_successful_login(login=login, password=password)
 
     # Change user email
     new_email = f"{login}_new@gmail.com"
-
-    json_data = {
-        "login": login,
-        "email": new_email,
-        "password": password
-    }
-
-    response = account.account_api.put_v1_account_email(token=token, json_data=json_data)
-    assert response.status_code == 200, f"Email for user {login} is not updated: {response.json()}"
+    account_helper.update_user_email(login=login, email=new_email, password=password)
 
     # User login, attempt is failed
-    response = account.login_api.post_v1_account_login(json_data=json_data)
-    assert response.status_code == 403, (f"User {login} should be inactive and login should be forbidden "
-                                         f"until confirmation of email change")
+    account_helper.user_failed_login(login=login, password=password)
 
     # Retrieve users emails
-    response = mailhog.mailhog_api.get_v2_messages(limit=50)
-    assert response.status_code == 200, f"Mails are not received: {response.json()}"
-
-    # Retrieve activation token to confirm email change
-    new_token = get_activation_token_by_email_and_login(login=login, email=new_email, response=response)
-    assert new_token is not None, f"Activation token for user {login} to confirm email change is not generated"
-
-    # Activate new token
-    response = account.account_api.put_v1_account_token(token=new_token)
-    assert response.status_code == 200, f"Token is not activated: {response.json()}"
+    account_helper.activate_user(login=login, email=new_email, new_user=False)
 
     # User login, attempt is successful
-    response = account.login_api.post_v1_account_login(json_data=json_data)
-    assert response.status_code == 200, f"User is not logged in: {response.json()}"
-
-
-def get_activation_token_by_login(
-        login,
-        response
-):
-    """
-    Helper function to get activation token from the welcome letter
-    :param login:
-    :param response:
-    :return:
-    """
-    token = None
-    for item in response.json()["items"]:
-        user_data = loads(item["Content"]["Body"])
-        user_login = user_data["Login"]
-        if user_login == login:
-            token = user_data["ConfirmationLinkUrl"].split('/')[-1]
-    return token
-
-
-def get_activation_token_by_email_and_login(
-        login,
-        email,
-        response
-):
-    """
-    Helper function to get activation token from the confirmation of the email change letter
-    :param login:
-    :param email:
-    :param response:
-    :return:
-    """
-    token = None
-    for item in response.json()["items"]:
-        if email in item["Content"]["Headers"]["To"]:
-            user_data = loads(item["Content"]["Body"])
-            user_login = user_data["Login"]
-            if user_login == login:
-                token = user_data["ConfirmationLinkUrl"].split('/')[-1]
-    return token
+    account_helper.user_successful_login(login=login, password=password)

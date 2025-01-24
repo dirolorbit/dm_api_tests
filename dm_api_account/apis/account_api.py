@@ -38,22 +38,16 @@ class AccountApi(RestClient):
 
     def put_v1_account_email(
             self,
-            token,
             json_data
     ):
         """
         PUT /v1/account/email Change registered user email
-        :param token:
         :param json_data:
         :return:
         """
-        headers = {
-            "accept": "text/plain",
-            "X-Dm-Auth-Token": token
-        }
         response = self.put(
             path="/v1/account/email",
-            headers=headers,
+            # headers=headers,
             json=json_data
         )
         return response
