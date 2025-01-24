@@ -21,6 +21,7 @@ def test_put_v1_account_email():
     login = f"guest_{dt_now}"
     password = f"password_{dt_now}"
     email = f"{login}@gmail.com"
+    new_email = f"{login}_new@gmail.com"
 
     # Register user
     account_helper.register_new_user(login=login, password=password, email=email)
@@ -32,7 +33,6 @@ def test_put_v1_account_email():
     account_helper.user_successful_login(login=login, password=password)
 
     # Change user email
-    new_email = f"{login}_new@gmail.com"
     account_helper.update_user_email(login=login, email=new_email, password=password)
 
     # User login, attempt is failed
