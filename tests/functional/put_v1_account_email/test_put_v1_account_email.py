@@ -38,7 +38,7 @@ def test_put_v1_account_email():
     # User login, attempt is failed
     account_helper.user_failed_login(login=login, password=password)
 
-    # Retrieve users emails
+    # Activate user
     account_helper.activate_user(login=login, email=new_email, new_user=False)
 
     # User login, attempt is successful
