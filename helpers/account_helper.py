@@ -71,7 +71,7 @@ class AccountHelper:
 
         return response
 
-    def user_successful_login(
+    def user_login(
             self,
             login: str,
             password: str,
@@ -83,23 +83,6 @@ class AccountHelper:
             "rememberMe": rememberme
         }
         response = self.dm_account_api.login_api.post_v1_account_login(json_data=json_data)
-        assert response.status_code == 200, f"User is not logged in: {response.json()}"
-        return response
-
-    def user_failed_login(
-            self,
-            login: str,
-            password: str,
-            rememberme: bool = True
-    ):
-        json_data = {
-            "login": login,
-            "password": password,
-            "rememberMe": rememberme
-        }
-        response = self.dm_account_api.login_api.post_v1_account_login(json_data=json_data)
-        assert response.status_code == 403, (f"User {login} should be inactive and login should be forbidden "
-                                             f"until confirmation of email change")
         return response
 
     def update_user_email(

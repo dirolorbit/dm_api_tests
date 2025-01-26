@@ -29,4 +29,5 @@ def test_post_v1_account_login():
     account_helper.activate_user(login=login, email=email, new_user=True)
 
     # Successful User login
-    account_helper.user_successful_login(login=login, password=password)
+    response = account_helper.user_login(login=login, password=password)
+    assert response.status_code == 200, f"User is not logged in: {response.json()}"
