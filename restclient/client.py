@@ -7,16 +7,6 @@ import uuid
 
 from restclient.configuration import Configuration
 
-structlog.configure(
-    processors=[
-        structlog.processors.JSONRenderer(
-            indent=4,
-            ensure_ascii=True,
-            sort_keys=True
-        )
-    ]
-)
-
 
 class RestClient:
     def __init__(
@@ -24,10 +14,17 @@ class RestClient:
             configuration: Configuration
     ):
         self.host = configuration.host
-        self.headers = configuration.headers
+        self.set_headers(Configuration.headers)
         self.disable_log = configuration.disable_log
         self.session = session()
         self.log = structlog.get_logger(__name__).bind(service='api')
+
+    def set_headers(
+            self,
+            headers
+    ):
+        if headers:
+            self.session.headers.update(headers)
 
     def post(
             self,

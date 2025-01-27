@@ -1,4 +1,6 @@
 class Configuration:
+    headers = None
+
     def __init__(
             self,
             host: str,
