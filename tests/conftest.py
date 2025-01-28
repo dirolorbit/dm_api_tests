@@ -57,10 +57,9 @@ def auth_account_helper(
     login = prepare_user.login
     password = prepare_user.password
     email = prepare_user.email
-    # Register user
+
     account_helper.register_new_user(login=login, password=password, email=email)
-    # Activate user
-    account_helper.activate_user(login=login, email=email, new_user=True)
+    account_helper.activate_user(login=login, email=email)
 
     account_helper.auth_client(
         login=login,

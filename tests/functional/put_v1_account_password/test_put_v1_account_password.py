@@ -10,5 +10,6 @@ def test_put_v1_account_helper(
         login=login, email=email,
         old_password=old_password, new_password=new_password
     )
+    # Successful User login after password change
     response = auth_account_helper.account_helper.user_login(login=login, password=new_password)
     assert response.status_code == 200, f"User is not logged in: {response.json()}"
