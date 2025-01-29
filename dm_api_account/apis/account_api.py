@@ -1,14 +1,7 @@
-import requests
+from restclient.client import RestClient
 
 
-class AccountApi:
-    def __init__(
-            self,
-            host,
-            headers=None
-    ):
-        self.host = host
-        self.headers = headers
+class AccountApi(RestClient):
 
     def post_v1_account(
             self,
@@ -19,8 +12,8 @@ class AccountApi:
         :param json_data:
         :return:
         """
-        response = requests.post(
-            url=f"{self.host}/v1/account",
+        response = self.post(
+            path="/v1/account",
             json=json_data
         )
         return response
@@ -37,30 +30,74 @@ class AccountApi:
         headers = {
             "accept": "text/plain",
         }
-        response = requests.put(
-            url=f"{self.host}/v1/account/{token}",
+        response = self.put(
+            path=f"/v1/account/{token}",
             headers=headers
         )
         return response
 
     def put_v1_account_email(
             self,
-            token,
             json_data
     ):
         """
         PUT /v1/account/email Change registered user email
-        :param token:
         :param json_data:
         :return:
         """
-        headers = {
-            "accept": "text/plain",
-            "X-Dm-Auth-Token": token
-        }
-        response = requests.put(
-            url=f"{self.host}/v1/account/email",
-            headers=headers,
+        response = self.put(
+            path="/v1/account/email",
             json=json_data
+        )
+        return response
+
+    def get_v1_account(
+            self,
+            **kwargs
+    ):
+        """
+        GET /v1/account Get current user
+        :param kwargs:
+        :return:
+        """
+        response = self.get(
+            path="/v1/account",
+            **kwargs
+        )
+        return response
+
+    def post_v1_account_password(
+            self,
+            json_data,
+            **kwargs
+    ):
+        """
+        POST /v1/account/password Reset registered user password
+        :param json_data:
+        :param kwargs:
+        :return:
+        """
+        response = self.post(
+            path="/v1/account/password",
+            json=json_data,
+            **kwargs
+        )
+        return response
+
+    def put_v1_account_password(
+            self,
+            json_data,
+            **kwargs
+    ):
+        """
+        PUT /v1/account/password Change registered user password
+        :param json_data:
+        :param kwargs:
+        :return:
+        """
+        response = self.put(
+            path="/v1/account/password",
+            json=json_data,
+            **kwargs
         )
         return response
