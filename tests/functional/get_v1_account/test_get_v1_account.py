@@ -1,7 +1,7 @@
 def test_get_v1_account_non_auth(
         account_helper
 ):
-    response = account_helper.dm_account_api.account_api.get_v1_account()
+    response = account_helper.dm_account_api.account_api.get_v1_account(validate_response=False)
     assert response.status_code == 401, "User should not be be authenticated"
 
 

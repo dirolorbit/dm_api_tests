@@ -1,6 +1,11 @@
 import time
 from json import loads
 
+from dm_api_account.models.change_email import ChangeEmail
+from dm_api_account.models.change_password import ChangePassword
+from dm_api_account.models.login_credentials import LoginCredentials
+from dm_api_account.models.registration import Registration
+from dm_api_account.models.reset_password import ResetPassword
 from services.api_mailhog import MailHogApi
 from services.dm_api_account import DMApiAccount
 
@@ -41,11 +46,8 @@ class AccountHelper:
             login: str,
             password: str
     ):
-        json_data = {
-            "login": login,
-            "password": password
-        }
-        response = self.dm_account_api.login_api.post_v1_account_login(json_data=json_data)
+        login_credentials = LoginCredentials(login=login, password=password)
+        response = self.dm_account_api.login_api.post_v1_account_login(login_credentials=login_credentials)
         auth_token = {
             "X-Dm-Auth-Token": response.headers["X-Dm-Auth-Token"]
         }
@@ -58,13 +60,11 @@ class AccountHelper:
             password: str,
             email: str
     ):
-        json_data = {
-            "login": login,
-            "email": email,
-            "password": password
-        }
+        registration = Registration(
+            login=login, password=password, email=email
+        )
 
-        response = self.dm_account_api.account_api.post_v1_account(json_data=json_data)
+        response = self.dm_account_api.account_api.post_v1_account(registration=registration)
         assert response.status_code == 201, f"User is not created: {response.json()}"
 
     def activate_user(
@@ -85,14 +85,12 @@ class AccountHelper:
             self,
             login: str,
             password: str,
-            rememberme: bool = True
+            remember_me: bool = True,
+            validate_response: bool = True
     ):
-        json_data = {
-            "login": login,
-            "password": password,
-            "rememberMe": rememberme
-        }
-        response = self.dm_account_api.login_api.post_v1_account_login(json_data=json_data)
+        login_credentials = LoginCredentials(login=login, password=password, remember_me=remember_me)
+        response = self.dm_account_api.login_api.post_v1_account_login(login_credentials=login_credentials,
+                                                                       validate_response=validate_response)
         return response
 
     def update_user_email(
@@ -101,12 +99,8 @@ class AccountHelper:
             email: str,
             password: str
     ):
-        json_data = {
-            "login": login,
-            "email": email,
-            "password": password
-        }
-        response = self.dm_account_api.account_api.put_v1_account_email(json_data=json_data)
+        change_email = ChangeEmail(login=login, email=email, password=password)
+        response = self.dm_account_api.account_api.put_v1_account_email(change_email=change_email)
         assert response.status_code == 200, f"Email for user {login} is not updated: {response.json()}"
 
     def change_user_password(
@@ -116,24 +110,14 @@ class AccountHelper:
             old_password: str,
             new_password: str
     ):
-        # Reset password
-        json_data = {
-            "login": login,
-            "email": email
-        }
-        response = self.dm_account_api.account_api.post_v1_account_password(json_data=json_data)
+        reset_password = ResetPassword(login=login, email=email)
+        response = self.dm_account_api.account_api.post_v1_account_password(reset_password=reset_password)
         assert response.status_code == 200, f"Password reset for {login} is failed: {response.json()}"
 
         token = self.get_activation_token(login=login, email=email, password_reset=True)
 
-        # Change password
-        json_data = {
-            "login": login,
-            "token": token,
-            "oldPassword": old_password,
-            "newPassword": new_password
-        }
-        response = self.dm_account_api.account_api.put_v1_account_password(json_data=json_data)
+        change_password = ChangePassword(login=login, token=token, old_password=old_password, new_password=new_password)
+        response = self.dm_account_api.account_api.put_v1_account_password(change_password=change_password)
         assert response.status_code == 200, f"Password change for {login} is failed: {response.json()}"
 
     @retry
