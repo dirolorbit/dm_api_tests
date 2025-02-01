@@ -20,7 +20,7 @@ class BbParseMode(str, Enum):
     CHAT = "Chat"
 
 
-class UseRole(str, Enum):
+class UserRole(str, Enum):
     GUEST = "Guest"
     PLAYER = "Player"
     ADMINISTRATOR = "Administrator"
@@ -82,7 +82,7 @@ class UserSettings(BaseModel):
 
 class UserDetails(BaseModel):
     login: str = Field(description="User login")
-    roles: List[UseRole] = Field(description="User roles")
+    roles: List[UserRole] = Field(description="User roles")
     medium_picture_url: str = Field(None, description="Profile picture URL M-size", alias='mediumPictureUrl')
     small_picture_url: str = Field(None, description="Profile picture URL S-size", alias='smallPictureUrl')
     status: str = Field(None, description="User defined status")
