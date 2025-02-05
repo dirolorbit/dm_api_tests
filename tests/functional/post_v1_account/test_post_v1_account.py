@@ -1,6 +1,3 @@
-import string
-from random import random
-
 import pytest
 from hamcrest import (
     has_entries,
