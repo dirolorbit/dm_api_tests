@@ -1,14 +1,16 @@
 import datetime
 from collections import namedtuple
+from pathlib import Path
 
 import pytest
 import structlog
+from vyper import v
 
 from helpers.account_helper import AccountHelper
-from services.api_mailhog import MailHogApi
-from services.dm_api_account import DMApiAccount
 from restclient.configuration import Configuration as DmApiConfiguration
 from restclient.configuration import Configuration as MailhogApiConfiguration
+from services.api_mailhog import MailHogApi
+from services.dm_api_account import DMApiAccount
 
 structlog.configure(
     processors=[
@@ -20,17 +22,43 @@ structlog.configure(
     ]
 )
 
+options = (
+    'service.dm_api_account',
+    'service.mailhog'
+)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def set_config(
+        request
+):
+    config = Path(__file__).joinpath("../../").joinpath("config")
+    config_name = request.config.getoption("--env")
+    v.set_config_name(config_name)
+    v.add_config_path(config)
+    v.read_in_config()
+    for option in options:
+        v.set(f"{option}", request.config.getoption(f"--{option}"))
+
+
+def pytest_addoption(
+        parser
+):
+    parser.addoption("--env", action="store", default="stg", help="run stg")
+    for option in options:
+        parser.addoption(f"--{option}", action="store", default=None)
+
 
 @pytest.fixture(scope='session')
 def mailhog_api():
-    mailhog_api_configuration = MailhogApiConfiguration(host="http://5.63.153.31:5025")
+    mailhog_api_configuration = MailhogApiConfiguration(host=v.get("service.mailhog"))
     mailhog_client = MailHogApi(configuration=mailhog_api_configuration)
     return mailhog_client
 
 
 @pytest.fixture(scope='session')
 def account_api():
-    dm_api_configuration = DmApiConfiguration(host="http://5.63.153.31:5051", disable_log=False)
+    dm_api_configuration = DmApiConfiguration(host=v.get("service.dm_api_account"), disable_log=False)
     account_client = DMApiAccount(configuration=dm_api_configuration)
     return account_client
 
@@ -49,7 +77,7 @@ def auth_account_helper(
         prepare_user,
         mailhog_api
 ):
-    dm_api_configuration = DmApiConfiguration(host="http://5.63.153.31:5051", disable_log=False)
+    dm_api_configuration = DmApiConfiguration(host=v.get("service.dm_api_account"), disable_log=False)
     account_client = DMApiAccount(configuration=dm_api_configuration)
     account_helper = AccountHelper(dm_account_api=account_client, mailhog=mailhog_api)
 

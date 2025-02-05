@@ -3,6 +3,7 @@ certifi==2024.12.14
 charset-normalizer==3.4.1
 curlify==2.2.1
 DateTime==5.5
+distconfig3==1.0.1
 idna==3.10
 iniconfig==2.0.0
 packaging==24.2
@@ -12,9 +13,13 @@ pydantic_core==2.27.2
 PyHamcrest==2.1.0
 pytest==8.3.4
 pytz==2024.2
+PyYAML==6.0.2
 requests==2.32.3
 setuptools==75.8.0
 structlog==25.1.0
+toml==0.10.2
 typing_extensions==4.12.2
 urllib3==2.3.0
+vyper-config==1.2.1
+watchdog==6.0.0
 zope.interface==7.2
