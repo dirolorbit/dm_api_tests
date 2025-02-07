@@ -1,6 +1,8 @@
 import time
 from json import loads
 
+import allure
+
 from dm_api_account.models.change_email import ChangeEmail
 from dm_api_account.models.change_password import ChangePassword
 from dm_api_account.models.login_credentials import LoginCredentials
@@ -41,6 +43,7 @@ class AccountHelper:
         self.dm_account_api = dm_account_api
         self.mailhog = mailhog
 
+    @allure.step("User authorization")
     def auth_client(
             self,
             login: str,
@@ -54,6 +57,7 @@ class AccountHelper:
         self.dm_account_api.account_api.set_headers(auth_token)
         self.dm_account_api.login_api.set_headers(auth_token)
 
+    @allure.step("New user registration")
     def register_new_user(
             self,
             login: str,
@@ -67,6 +71,7 @@ class AccountHelper:
         response = self.dm_account_api.account_api.post_v1_account(registration=registration)
         assert response.status_code == 201, f"User is not created: {response.json()}"
 
+    @allure.step("User activation")
     def activate_user(
             self,
             login: str,
@@ -81,6 +86,7 @@ class AccountHelper:
 
         return response
 
+    @allure.step("User login")
     def user_login(
             self,
             login: str,
@@ -89,10 +95,13 @@ class AccountHelper:
             validate_response: bool = True
     ):
         login_credentials = LoginCredentials(login=login, password=password, remember_me=remember_me)
-        response = self.dm_account_api.login_api.post_v1_account_login(login_credentials=login_credentials,
-                                                                       validate_response=validate_response)
+        response = self.dm_account_api.login_api.post_v1_account_login(
+            login_credentials=login_credentials,
+            validate_response=validate_response
+        )
         return response
 
+    @allure.step("Email change")
     def update_user_email(
             self,
             login: str,
@@ -103,6 +112,7 @@ class AccountHelper:
         response = self.dm_account_api.account_api.put_v1_account_email(change_email=change_email)
         assert response.status_code == 200, f"Email for user {login} is not updated: {response.json()}"
 
+    @allure.step("Password change")
     def change_user_password(
             self,
             login: str,
