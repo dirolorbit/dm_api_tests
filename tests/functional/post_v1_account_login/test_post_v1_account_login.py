@@ -1,3 +1,6 @@
+from checkers.http_checkers import check_status_code_http
+
+
 def test_post_v1_account_login(
         account_helper,
         prepare_user
@@ -9,5 +12,5 @@ def test_post_v1_account_login(
     account_helper.register_new_user(login=login, password=password, email=email)
     account_helper.activate_user(login=login, email=email)
     # Successful User login
-    response = account_helper.user_login(login=login, password=password)
-    assert response.status_code == 200, f"User is not logged in: {response.json()}"
+    with check_status_code_http(expected_status_code=200):
+        account_helper.user_login(login=login, password=password)

@@ -1,3 +1,6 @@
+from checkers.http_checkers import check_status_code_http
+
+
 def test_put_v1_account_helper(
         auth_account_helper
 ):
@@ -7,9 +10,10 @@ def test_put_v1_account_helper(
     new_password = f"{old_password}#new"
 
     auth_account_helper.account_helper.change_user_password(
-        login=login, email=email,
-        old_password=old_password, new_password=new_password
+        login=login,
+        email=email,
+        old_password=old_password,
+        new_password=new_password
     )
-    # Successful User login after password change
-    response = auth_account_helper.account_helper.user_login(login=login, password=new_password)
-    assert response.status_code == 200, f"User is not logged in: {response.json()}"
+    # Successful login after password change
+    auth_account_helper.account_helper.user_login(login=login, password=new_password)
