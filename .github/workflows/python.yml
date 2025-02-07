@@ -37,14 +37,14 @@ jobs:
     needs: test
     name: Generate allure report
     steps:
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: 'microsoft'
           java-version: '17'
       - run: sudo wget https://github.com/allure-framework/allure2/releases/download/2.32.2/allure-2.32.2.tgz && sudo tar -xvzf allure-2.32.2.tgz -C /opt/ && sudo ln -s /opt/allure-2.32.2/bin/allure /usr/bin/allure
       - name: Download allure results
         uses: actions/download-artifact@v4
-      - run: allure generate -c allure-results -o _size
+      - run: allure generate -c allure-results -o _site
       - name: Store allure report
         uses: actions/upload-artifact@v4
         with:
