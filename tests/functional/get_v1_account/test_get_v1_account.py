@@ -11,8 +11,8 @@ from dm_api_account.models.user_details_envelope import (
 @allure.suite("GET /v1/account")
 class TestGetV1Account:
 
-    @allure.sub_suite("Positive check")
-    @allure.description("Get current user")
+    @allure.sub_suite("Negative check")
+    @allure.description("Get not authenticated user")
     @allure.severity(allure.severity_level.CRITICAL)
     def test_get_v1_account_non_auth(
             self,
@@ -21,8 +21,8 @@ class TestGetV1Account:
         with check_status_code_http(expected_status_code=401, expected_message="User must be authenticated"):
             account_helper.dm_account_api.account_api.get_v1_account(validate_response=False)
 
-    @allure.sub_suite("Negative check")
-    @allure.description("Get not authenticated user")
+    @allure.sub_suite("Positive check")
+    @allure.description("Get authenticated user")
     @allure.severity(allure.severity_level.CRITICAL)
     def test_get_v1_account_auth(
             self,
