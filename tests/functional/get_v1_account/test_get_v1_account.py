@@ -2,9 +2,7 @@ import allure
 
 from checkers.get_v1_account import GetV1Account
 from checkers.http_checkers import check_status_code_http
-from dm_api_account.models.user_details_envelope import (
-    UserDetailsEnvelope
-)
+from clients.http.dm_api_account.models.user_details_envelope import UserDetailsEnvelope
 
 
 @allure.parent_suite("Account API")
