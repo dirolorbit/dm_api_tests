@@ -17,7 +17,9 @@ pluggy==1.5.0
 pydantic==2.10.6
 pydantic_core==2.27.2
 PyHamcrest==2.1.0
+pyTelegramBotAPI==4.26.0
 pytest==8.3.4
+pytest-telegram-notifier==1.4.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 pytz==2024.2
@@ -28,6 +30,7 @@ setuptools==75.8.0
 six==1.17.0
 structlog==25.1.0
 swagger-coverage @ https://github.com/dirolorbit/swagger-coverage-py/archive/refs/heads/master.zip#sha256=c2f2548ae37091f92fe25aa9c3cf2f917fcb6303e38e1960f11fb0b386b8cc12
+telebot==0.0.5
 toml==0.10.2
 typing_extensions==4.12.2
 urllib3==2.3.0

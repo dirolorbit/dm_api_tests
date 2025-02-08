@@ -1,4 +1,5 @@
 import datetime
+import os
 from collections import namedtuple
 from pathlib import Path
 
@@ -25,7 +26,9 @@ structlog.configure(
 
 options = (
     'service.dm_api_account',
-    'service.mailhog'
+    'service.mailhog',
+    'telegram.chat_id',
+    'telegram.token'
 )
 
 
@@ -50,6 +53,11 @@ def set_config(
     v.read_in_config()
     for option in options:
         v.set(f"{option}", request.config.getoption(f"--{option}"))
+    os.environ["TELEGRAM_BOT_CHAT_ID"] = v.get("telegram.chat_id")
+    os.environ["TELEGRAM_BOT_ACCESS_TOKEN"] = v.get("telegram.token")
+    request.config.stash["telegram-notifier-addfields"]["environment"] = config_name
+    request.config.stash["telegram-notifier-addfields"]["report"] = "https://dirolorbit.github.io/dm_api_tests/"
+
 
 
 def pytest_addoption(
