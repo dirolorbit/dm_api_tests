@@ -1,0 +1,7 @@
+service:
+  dm_api_account: "http://5.63.153.31:5051"
+  mailhog: "http://5.63.153.31:5025"
+
+telegram:
+  chat_id: "-1002257268191"
+  token: "7560102891:AAFyD8CHMSmQJaGuWN7AoL8CRanMvV6gXq4"
